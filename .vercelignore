@@ -1,0 +1,9 @@
+.vercel
+.env*
+*.bak
+*.task5_bak
+*.task5_pre_edit.bak
+*.wooden_normal
+*.tmp
+*.py
+preview_*.png

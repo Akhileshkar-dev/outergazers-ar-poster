@@ -1,0 +1,28 @@
+# Environment & Deployment
+.env*
+.vercel/
+
+# Historical and temporary backups
+*.bak
+*.bak*
+*.task5_bak
+*.task5_pre_edit.bak
+*.wooden_normal
+*.original
+*.tmp
+
+# Diagnostic renders and crops
+preview_*.png
+crop_*.png
+cropped_*.png
+test_*.png
+verify_*.png
+flawless_*.png
+view_*.png
+
+# OS & Editor artifacts
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/

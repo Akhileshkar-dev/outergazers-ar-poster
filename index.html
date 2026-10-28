@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Team Outergazers - WebAR Experience</title>
+    
+    <!-- 1. Include A-Frame -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    
+    <!-- 2. Include MindAR for A-Frame -->
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    
+    <!-- 3. Include Outergazers Master Timeline & Sequence Controller -->
+    <!-- Cache-Control headers for mobile devices -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
+    <!-- 3. Include Outergazers Master Timeline & Sequence Controller (Task 6 Cache-Busted) -->
+    <script src="./outergazers-timeline.js?v=20261026_scroll_perfect"></script>
+    
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+
+      /* Scanning & Status UI Overlay */
+      #ui-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      .badge {
+        background: rgba(15, 23, 42, 0.85);
+        color: #ffffff;
+        padding: 10px 20px;
+        border-radius: 24px;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        transition: all 0.3s ease;
+        text-align: center;
+        max-width: 90%;
+      }
+
+      #tracking-hint {
+        margin-top: 10px;
+      }
+
+      #instruction-hint {
+        margin-bottom: 20px;
+        font-size: 13px;
+        background: rgba(30, 41, 59, 0.8);
+      }
+
+      /* Scanning Reticle Frame */
+      .scan-frame {
+        width: 220px;
+        height: 280px;
+        border: 2px dashed rgba(255, 255, 255, 0.6);
+        border-radius: 12px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+      }
+
+      /* Initial Loading Overlay */
+      #loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #0f172a;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+        font-family: inherit;
+        transition: opacity 0.5s ease;
+      }
+
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        border-top-color: #a855f7;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 16px;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      /* Replay Button UI (Fixed Top-Right) */
+      #replay-btn {
+        position: fixed;
+        top: max(16px, env(safe-area-inset-top, 16px));
+        right: max(16px, env(safe-area-inset-right, 16px));
+        z-index: 1500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(15, 23, 42, 0.82);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 20px;
+        padding: 8px 14px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: all 0.2s ease;
+        pointer-events: auto;
+      }
+
+      #replay-btn:hover {
+        background: rgba(30, 41, 59, 0.95);
+        border-color: rgba(168, 85, 247, 0.6);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(168, 85, 247, 0.25);
+      }
+
+      #replay-btn:active {
+        transform: scale(0.96);
+        background: rgba(15, 23, 42, 0.95);
+      }
+
+      #replay-btn .replay-icon {
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+      }
+
+      #replay-btn:active .replay-icon {
+        transform: rotate(-180deg);
+      }
+
+      /* Interactive Registration Button Overlay (Section 4) */
+      #register-btn {
+        position: fixed;
+        display: none;
+        z-index: 1600;
+        cursor: pointer;
+        pointer-events: auto;
+        -webkit-tap-highlight-color: transparent;
+        outline: none;
+        background: transparent;
+        border: none;
+        touch-action: manipulation;
+      }
+
+      #register-btn:focus-visible {
+        outline: 2px solid #00e5ff;
+        border-radius: 8px;
+        box-shadow: 0 0 14px rgba(0, 229, 255, 0.7);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Initial Loading Screen -->
+    <div id="loading-overlay">
+      <div class="spinner"></div>
+      <h2 style="margin: 0 0 8px 0; font-size: 20px;">Team Outergazers AR</h2>
+      <p style="margin: 0; font-size: 14px; opacity: 0.8;" id="loading-text">Loading 3D assets & camera...</p>
+    </div>
+
+    <!-- Replay Button (Top-Right) -->
+    <button id="replay-btn" class="replay-button" aria-label="Replay Experience">
+      <svg class="replay-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 4v6h6"></path>
+        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+      </svg>
+      <span>Replay</span>
+    </button>
+
+    <!-- UI Overlay for AR Interaction -->
+    <div id="ui-overlay">
+      <div class="badge" id="tracking-hint">Point camera at the printed poster</div>
+      <div class="scan-frame" id="scan-frame"></div>
+      <div class="badge" id="instruction-hint">Keep poster centered in view</div>
+    </div>
+
+    <!-- Real Clickable Registration Button Overlay (Section 4) -->
+    <a id="register-btn"
+       href="https://outergazer.in/events/intracollege-gamejam-2026"
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Register Now for GameJam 2026"
+       tabindex="0">
+    </a>
+
+    <!-- 
+      MindAR Scene Setup
+      - mindar-image connects to poster.mind
+      - colorSpace sRGB preserves vibrant Minecraft textures
+    -->
+    <a-scene 
+      mindar-image="imageTargetSrc: ./poster.mind; autoStart: true; uiLoading: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 1000; missTolerance: 15; warmupTolerance: 5;" 
+      color-space="sRGB" 
+      renderer="colorManagement: true; physicallyCorrectLights: true;" 
+      vr-mode-ui="enabled: false" 
+      device-orientation-permission-ui="enabled: false">
+      
+      <a-assets timeout="45000">
+        <a-asset-item id="grass-glb" src="./assets/Grass_Spawn.glb"></a-asset-item>
+        <a-asset-item id="obsidian-glb" src="./assets/Obsidian_Portal_Construction.glb"></a-asset-item>
+        <a-asset-item id="portal-glb" src="./assets/Portal_Surface.glb"></a-asset-item>
+        <a-asset-item id="chest-glb" src="./assets/chest.glb"></a-asset-item>
+        <a-asset-item id="text-glb" src="./assets/outergazers_text_fbx_style.glb?v=20261023_silver_pbr"></a-asset-item>
+      </a-assets>
+
+      <!-- Camera -->
+      <a-camera position="0 0 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse" near="0.01"></a-camera>
+      
+      <!-- Lighting: Natural ambient + directional sun -->
+      <a-light type="ambient" color="#ffffff" intensity="1.2"></a-light>
+      <a-light type="directional" color="#fffaf0" intensity="1.5" position="2 4 3"></a-light>
+      
+      <!-- 
+        Target Entity 0:
+        Anchors the complete Outergazers experience to poster.mind
+      -->
+      <a-entity mindar-image-target="targetIndex: 0" id="ar-target" outergazers-sequence>
+        
+        <!--
+          Outergazers Root Container:
+          - Vertical poster coordinate alignment:
+            Target +X: Physical Horizontal Right
+            Target +Y: Physical Vertical Up (towards ceiling)
+            Target +Z: Poster Normal (pointing outward toward viewer)
+          - rotation="0 0 0" aligns Model +Y (up) with Target +Y (up) and Model +Z (forward) with Target +Z (outward)
+          - position="0 -0.25 0" centers the portal and expanded grass base vertically on portrait poster with +17.5% scale
+          - scale="0.08 0.08 0.08" fits the 10-unit wide grass platform into 1.0-width MindAR poster boundary
+        -->
+        <a-entity id="outergazers-root" position="0 -0.488 0" rotation="0 0 0" scale="0.183 0.183 0.183">
+          <!-- 1. Grass Platform Emergence -->
+          <a-entity id="model-grass" gltf-model="#grass-glb"></a-entity>
+          
+          <!-- 2. Obsidian Portal Construction -->
+          <a-entity id="model-obsidian" gltf-model="#obsidian-glb"></a-entity>
+          
+          <!-- 3. Portal Energy Activation Surface -->
+          <a-entity id="model-portal" gltf-model="#portal-glb"></a-entity>
+          
+          <!-- 4. Ender Chest (Flight, Impact, Jiggle, & Tap Target) -->
+          <a-entity id="model-chest" gltf-model="#chest-glb" class="clickable"></a-entity>
+
+          <!-- 5. OUTERGAZERS Cinematic 3D Text Reveal -->
+          <a-entity id="outergazers-text-container" position="0 5.267 2.1" visible="false">
+            <a-entity id="model-text"
+                      gltf-model="#text-glb"
+                      position="-2.9744 0 0"
+                      rotation="90 0 0"
+                      scale="0.72 1.25 1.80">
+            </a-entity>
+          </a-entity>
+        </a-entity>
+
+      </a-entity>
+    </a-scene>
+
+    <script>
+      // Asset loading progress & overlay dismiss logic
+      const sceneEl = document.querySelector('a-scene');
+      const loadingOverlay = document.querySelector('#loading-overlay');
+      const scanFrame = document.querySelector('#scan-frame');
+      const targetEl = document.querySelector('#ar-target');
+
+      sceneEl.addEventListener('loaded', () => {
+        console.log('[Outergazers] A-Frame scene ready.');
+        setTimeout(() => {
+          if (loadingOverlay) {
+            loadingOverlay.style.opacity = '0';
+            setTimeout(() => { loadingOverlay.style.display = 'none'; }, 500);
+          }
+        }, 1200);
+      });
+
+      targetEl.addEventListener('targetFound', () => {
+        if (scanFrame) scanFrame.style.display = 'none';
+      });
+
+      targetEl.addEventListener('targetLost', () => {
+        if (scanFrame) scanFrame.style.display = 'block';
+        const regBtn = document.querySelector('#register-btn');
+        if (regBtn) regBtn.style.display = 'none';
+      });
+
+      // Registration button event safety (prevents AR scene tap interference)
+      const regBtn = document.querySelector('#register-btn');
+      if (regBtn) {
+        regBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          console.log('[Outergazers] Register button clicked -> https://outergazer.in/events/intracollege-gamejam-2026');
+        });
+        ['pointerdown', 'mousedown', 'touchstart', 'touchend'].forEach((evt) => {
+          regBtn.addEventListener(evt, (e) => { e.stopPropagation(); }, { passive: false });
+        });
+      }
+
+      // Replay button interaction
+      const replayBtn = document.querySelector('#replay-btn');
+      if (replayBtn) {
+        replayBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const target = document.querySelector('#ar-target');
+          if (target && target.components && target.components['outergazers-sequence']) {
+            target.components['outergazers-sequence'].replayExperience();
+          } else if (window.outergazersTimeline) {
+            window.outergazersTimeline.replayExperience();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
