@@ -38,6 +38,8 @@ final_scene.collection.children.link(final_col)
 
 root_obj = bpy.data.objects.new('outergazers_text_root', None)
 final_col.objects.link(root_obj)
+root_obj.rotation_mode = 'XYZ'
+root_obj.rotation_euler = (0, 0, 0)
 created_objects = [root_obj]
 
 mat_og = bpy.data.materials.get('Material_1.001') or bpy.data.materials.get('Material_1')
@@ -79,6 +81,9 @@ for label, source_name in letter_defs:
         M_obj = M_net @ mw
         for v in d.data.vertices:
             v.co = M_obj @ v.co
+        d.rotation_mode = 'XYZ'
+        d.rotation_euler = (0, 0, 0)
+        d.rotation_quaternion = (1, 0, 0, 0)
         d.matrix_world = mathutils.Matrix.Identity(4)
         d.data.update()
         d.select_set(True)
@@ -87,6 +92,9 @@ for label, source_name in letter_defs:
     bpy.ops.object.join()
     joined = final_scene.view_layers[0].objects.active
     joined.name = label
+    joined.rotation_mode = 'XYZ'
+    joined.rotation_euler = (0, 0, 0)
+    joined.rotation_quaternion = (1, 0, 0, 0)
     if mat_og:
         joined.data.materials.clear()
         joined.data.materials.append(mat_og)
@@ -94,6 +102,10 @@ for label, source_name in letter_defs:
 
 # GJ
 gj_root = bpy.data.objects['gamejam_2026.003']
+R_fix = mathutils.Matrix.Rotation(math.pi / 2, 4, 'X')
+inv_gj = gj_root.matrix_world.inverted()
+M_gj_net = M_net @ gj_root.matrix_world @ R_fix @ inv_gj
+
 gj_cubes = [c for c in gj_root.children_recursive if c.type == 'MESH']
 bpy.ops.object.select_all(action='DESELECT')
 dupes_gj = []
@@ -102,9 +114,12 @@ for c in gj_cubes:
     d.data = c.data.copy()
     final_col.objects.link(d)
     mw = c.matrix_world
-    M_obj = M_net @ mw
+    M_obj = M_gj_net @ mw
     for v in d.data.vertices:
         v.co = M_obj @ v.co
+    d.rotation_mode = 'XYZ'
+    d.rotation_euler = (0, 0, 0)
+    d.rotation_quaternion = (1, 0, 0, 0)
     d.matrix_world = mathutils.Matrix.Identity(4)
     d.data.update()
     d.select_set(True)
@@ -114,6 +129,9 @@ final_scene.view_layers[0].objects.active = dupes_gj[0]
 bpy.ops.object.join()
 joined_gj = final_scene.view_layers[0].objects.active
 joined_gj.name = 'Line_GameJam_2026'
+joined_gj.rotation_mode = 'XYZ'
+joined_gj.rotation_euler = (0, 0, 0)
+joined_gj.rotation_quaternion = (1, 0, 0, 0)
 if mat_gj:
     joined_gj.data.materials.clear()
     joined_gj.data.materials.append(mat_gj)
@@ -127,7 +145,7 @@ shift_y = front_y_og - front_y_gj
 # In Blender space, UP is +Z. Place GJ top just below OG bottom:
 min_z_og = min(v.co.z for o in og_joined_list for v in o.data.vertices)
 max_z_gj = max(v.co.z for v in joined_gj.data.vertices)
-shift_z = (min_z_og - 0.15) - max_z_gj
+shift_z = (min_z_og - 0.25) - max_z_gj
 
 for v in joined_gj.data.vertices:
     v.co.y += shift_y
@@ -162,6 +180,9 @@ for o in all_objs:
     for v in o.data.vertices:
         v.co -= center
     o.data.update()
+    o.rotation_mode = 'XYZ'
+    o.rotation_euler = (0, 0, 0)
+    o.rotation_quaternion = (1, 0, 0, 0)
     o.parent = root_obj
     created_objects.append(o)
     rest_configs.append((o.name, round(center.x, 4), round(center.y, 4), round(center.z, 4)))

@@ -1773,18 +1773,18 @@ AFRAME.registerComponent('outergazers-sequence', {
 
     // All letters of OUTERGAZERS + GAMEJAM 2026 bottom line with authored resting positions in glTF space
     const letterConfigs = [
-      { name: 'Letter_00_O', letter: 'O', start: 0.10, restX: -10.0000, restY: 1.4792, restZ: -0.8125 },
-      { name: 'Letter_01_U', letter: 'U', start: 0.28, restX: -8.0000, restY: 1.4744, restZ: -0.8125 },
-      { name: 'Letter_02_T', letter: 'T', start: 0.46, restX: -6.0000, restY: 1.4697, restZ: -0.8125 },
-      { name: 'Letter_03_E', letter: 'E', start: 0.64, restX: -4.0000, restY: 1.4650, restZ: -0.8125 },
-      { name: 'Letter_04_R', letter: 'R', start: 0.82, restX: -2.0000, restY: 1.4603, restZ: -0.8125 },
-      { name: 'Letter_05_G', letter: 'G', start: 1.00, restX: 0.0000, restY: 1.4556, restZ: -0.8125 },
-      { name: 'Letter_06_A', letter: 'A', start: 1.18, restX: 2.0000, restY: 1.4509, restZ: -0.8125 },
-      { name: 'Letter_07_Z', letter: 'Z', start: 1.36, restX: 4.0000, restY: 1.4462, restZ: -0.8125 },
-      { name: 'Letter_08_E', letter: 'E', start: 1.54, restX: 6.0000, restY: 1.4414, restZ: -0.8125 },
-      { name: 'Letter_09_R', letter: 'R', start: 1.72, restX: 8.0000, restY: 1.4367, restZ: -0.8125 },
-      { name: 'Letter_10_S', letter: 'S', start: 1.90, restX: 10.0000, restY: 1.4320, restZ: -0.8125 },
-      { name: 'Line_GameJam_2026', letter: 'GAMEJAM 2026', start: 2.15, restX: -0.0008, restY: -1.4759, restZ: -2.0625 }
+      { name: 'Letter_00_O', letter: 'O', start: 0.10, restX: -10.0000, restY: 2.2323, restZ: -0.8125 },
+      { name: 'Letter_01_U', letter: 'U', start: 0.28, restX: -8.0000, restY: 2.2276, restZ: -0.8125 },
+      { name: 'Letter_02_T', letter: 'T', start: 0.46, restX: -6.0000, restY: 2.2229, restZ: -0.8125 },
+      { name: 'Letter_03_E', letter: 'E', start: 0.64, restX: -4.0000, restY: 2.2181, restZ: -0.8125 },
+      { name: 'Letter_04_R', letter: 'R', start: 0.82, restX: -2.0000, restY: 2.2134, restZ: -0.8125 },
+      { name: 'Letter_05_G', letter: 'G', start: 1.00, restX: 0.0000, restY: 2.2087, restZ: -0.8125 },
+      { name: 'Letter_06_A', letter: 'A', start: 1.18, restX: 2.0000, restY: 2.2040, restZ: -0.8125 },
+      { name: 'Letter_07_Z', letter: 'Z', start: 1.36, restX: 4.0000, restY: 2.1993, restZ: -0.8125 },
+      { name: 'Letter_08_E', letter: 'E', start: 1.54, restX: 6.0000, restY: 2.1946, restZ: -0.8125 },
+      { name: 'Letter_09_R', letter: 'R', start: 1.72, restX: 8.0000, restY: 2.1899, restZ: -0.8125 },
+      { name: 'Letter_10_S', letter: 'S', start: 1.90, restX: 10.0000, restY: 2.1851, restZ: -0.8125 },
+      { name: 'Line_GameJam_2026', letter: 'GAMEJAM 2026', start: 2.15, restX: -0.0097, restY: -1.5259, restZ: -1.3594 }
     ];
 
     // Traverse all meshes to apply nearest-neighbor pixel filtering and emissive luminescence
