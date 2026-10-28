@@ -470,7 +470,7 @@ AFRAME.registerComponent('outergazers-sequence', {
     // OUTERGAZERS Cinematic 3D Text Reveal Animation State (Task 12 Physics & Cyan)
     this.textAction = null;
     this.textRevealTimer = 0.0;
-    this.textRevealDuration = 7.000; // Compressed from 11.000s for energetic emergence (~23.6% reduction)
+    this.textRevealDuration = 3.600; // Snappy, energetic emergence of OUTERGAZERS & GAMEJAM 2026 title
     this.isTextRevealPlaying = false;
     this.hasTextRevealCompleted = false;
     this.textHeroMaterial = null;
@@ -953,7 +953,7 @@ AFRAME.registerComponent('outergazers-sequence', {
           self.textAction = self.mixers.text.clipAction(clip);
           self.textAction.setLoop(THREE.LoopOnce);
           self.textAction.clampWhenFinished = true;
-          self.textRevealDuration = 7.000; // Compressed from 11.000s for energetic emergence (~23.6% reduction)
+          self.textRevealDuration = 3.600; // Snappy, energetic emergence of OUTERGAZERS & GAMEJAM 2026 title
         } else {
           console.error('[Outergazers ERROR] No animations found in outergazers_text_reveal.glb!');
         }
@@ -1771,59 +1771,52 @@ AFRAME.registerComponent('outergazers-sequence', {
 
     this.textLetterNodes = [];
 
-    // Configuration of all 11 letters with exact authored timing and resting positions
-    // Compressed letter emergence timing (~23.6% reduction in total sequence duration)
+    // All letters of OUTERGAZERS + GAMEJAM 2026 bottom line with authored resting positions in glTF space
     const letterConfigs = [
-      { name: 'Letter_00_O', letter: 'O', start: 0.15, restX: 0.3184134 },
-      { name: 'Letter_01_U', letter: 'U', start: 0.81, restX: 1.1561000 },
-      { name: 'Letter_02_T', letter: 'T', start: 1.35, restX: 1.9126000 },
-      { name: 'Letter_03_E', letter: 'E', start: 1.89, restX: 2.6455000 },
-      { name: 'Letter_04_R', letter: 'R', start: 2.46, restX: 3.3789000 },
-      { name: 'Letter_05_G', letter: 'G', start: 3.15, restX: 4.1518000 },
-      { name: 'Letter_06_A', letter: 'A', start: 3.72, restX: 4.9262000 },
-      { name: 'Letter_07_Z', letter: 'Z', start: 4.26, restX: 5.6855000 },
-      { name: 'Letter_08_E', letter: 'E', start: 4.79, restX: 6.4439000 },
-      { name: 'Letter_09_R', letter: 'R', start: 5.33, restX: 7.1834000 },
-      { name: 'Letter_10_S', letter: 'S', start: 5.93, restX: 7.9436750 }
+      { name: 'Letter_00_O', letter: 'O', start: 0.10, restX: -9.9997, restY: 1.3147, restZ: 1.6980 },
+      { name: 'Letter_01_U', letter: 'U', start: 0.28, restX: -7.9998, restY: 1.3061, restZ: 1.6849 },
+      { name: 'Letter_02_T', letter: 'T', start: 0.46, restX: -5.9998, restY: 1.2974, restZ: 1.6719 },
+      { name: 'Letter_03_E', letter: 'E', start: 0.64, restX: -3.9999, restY: 1.2888, restZ: 1.6588 },
+      { name: 'Letter_04_R', letter: 'R', start: 0.82, restX: -1.9999, restY: 1.2801, restZ: 1.6457 },
+      { name: 'Letter_05_G', letter: 'G', start: 1.00, restX: 0.0000, restY: 1.2715, restZ: 1.6326 },
+      { name: 'Letter_06_A', letter: 'A', start: 1.18, restX: 1.9999, restY: 1.2628, restZ: 1.6195 },
+      { name: 'Letter_07_Z', letter: 'Z', start: 1.36, restX: 3.9999, restY: 1.2542, restZ: 1.6064 },
+      { name: 'Letter_08_E', letter: 'E', start: 1.54, restX: 5.9998, restY: 1.2455, restZ: 1.5933 },
+      { name: 'Letter_09_R', letter: 'R', start: 1.72, restX: 7.9998, restY: 1.2369, restZ: 1.5802 },
+      { name: 'Letter_10_S', letter: 'S', start: 1.90, restX: 9.9997, restY: 1.2283, restZ: 1.5671 },
+      { name: 'Line_GameJam_2026', letter: 'GAMEJAM 2026', start: 2.15, restX: -0.0228, restY: -0.6042, restZ: -0.6114 }
     ];
+
+    // Traverse all meshes to apply nearest-neighbor pixel filtering and emissive luminescence
+    textModel.traverse((node) => {
+      if (node.isMesh && node.material) {
+        const mat = node.material;
+        if (mat.map) {
+          mat.map.magFilter = THREE.NearestFilter;
+          mat.map.minFilter = THREE.NearestFilter;
+          mat.map.generateMipmaps = false;
+          mat.map.needsUpdate = true;
+        }
+        mat.roughness = 0.40;
+        mat.metalness = 0.10;
+        if (envMap) {
+          mat.envMap = envMap;
+          mat.envMapIntensity = 0.65;
+        }
+        if (mat.map) {
+          mat.emissive = new THREE.Color(0xffffff);
+          mat.emissiveMap = mat.map;
+          mat.emissiveIntensity = 0.38;
+        }
+        mat.side = THREE.FrontSide;
+        mat.alphaTest = 0.05;
+        mat.needsUpdate = true;
+      }
+    });
 
     letterConfigs.forEach((cfg) => {
       const node = textModel.getObjectByName(cfg.name);
       if (node && node.isMesh && node.geometry) {
-        // Configure new authentic Minecraft icy frost style with sharp pixel filtering
-        if (node.material) {
-          if (node.material.map) {
-            node.material.map.magFilter = THREE.NearestFilter;
-            node.material.map.minFilter = THREE.NearestFilter;
-            node.material.map.generateMipmaps = false;
-            node.material.map.needsUpdate = true;
-          }
-          node.material.roughness = 0.45;
-          node.material.metalness = 0.10;
-          if (envMap) {
-            node.material.envMap = envMap;
-            node.material.envMapIntensity = 0.65;
-          }
-          if (node.material.map) {
-            node.material.emissive = new THREE.Color(0xffffff);
-            node.material.emissiveMap = node.material.map;
-            node.material.emissiveIntensity = 0.35;
-          }
-          node.material.side = THREE.FrontSide;
-          node.material.alphaTest = 0.05;
-          node.material.needsUpdate = true;
-        }
-
-        // Remove any old cyan halo mesh or extraneous outline
-        const oldHalo = node.getObjectByName(cfg.name + '_Halo');
-        if (oldHalo) {
-          node.remove(oldHalo);
-        }
-        const oldOutline = node.getObjectByName(cfg.name + '_Outline');
-        if (oldOutline) {
-          node.remove(oldOutline);
-        }
-
         this.textLetterNodes.push({
           node: node,
           config: cfg
@@ -1831,18 +1824,15 @@ AFRAME.registerComponent('outergazers-sequence', {
       }
     });
 
-    console.log('[Outergazers] Configured ' + this.textLetterNodes.length + ' letters with new Minecraft font & pixel art style.');
+    console.log('[Outergazers] Configured ' + this.textLetterNodes.length + ' title nodes with new Minecraft font & pixel art style.');
   },
 
   updateTextEmergencePhysics: function (dt, timer) {
     if (!this.textLetterNodes || this.textLetterNodes.length === 0) return;
 
-    const midX = 4.13106;
-    // Starting emergence position matching chest launch from inside portal vortex
-    // With container at (0, 5.267, 2.10), Root_Z_launch = 2.10 + 1.25 * (-2.20) = -0.65 (chestState.startPos.z)
-    const launchY = -2.20;     // Inside portal energy opening (matches chestState.startPos.z: -0.65)
-    const restZ = -0.4093887;  // Local resting elevation (yields Root_Y: 6.004, matching chestState.startPos.y)
-    const flightDuration = 0.88; // Snappy physical emergence travel duration (~23.5% faster)
+    const launchY = -10.0;
+    const launchZ = -3.5;
+    const flightDuration = 0.75;
 
     for (let i = 0; i < this.textLetterNodes.length; i++) {
       const item = this.textLetterNodes[i];
@@ -1851,86 +1841,74 @@ AFRAME.registerComponent('outergazers-sequence', {
       const tElapsed = timer - cfg.start;
 
       if (tElapsed < 0) {
-        // Kept hidden inside the portal until authored emergence time
         node.visible = false;
         node.scale.set(0.0001, 0.0001, 0.0001);
-        node.position.set(midX, launchY, restZ);
+        node.position.set(cfg.restX * 0.15, launchY, launchZ);
         node.rotation.set(0, 0, 0);
         continue;
       }
 
-      // Letter is emerging from portal! Trigger emergence whoosh sound once
       if (this.playedLetterWhooshSounds && !this.playedLetterWhooshSounds.has(cfg.name)) {
         this.playedLetterWhooshSounds.add(cfg.name);
-        this.playLetterWhooshSound(i);
+        this.playLetterWhooshSound(i % 11);
       }
 
       node.visible = true;
       const u = Math.min(tElapsed / flightDuration, 1.0);
 
       if (u >= 1.0) {
-        // Locked rigidly in final resting transform
-        node.position.set(cfg.restX, 0.0000, restZ);
+        node.position.set(cfg.restX, cfg.restY, cfg.restZ);
         node.rotation.set(0, 0, 0);
         node.scale.set(1.0, 1.0, 1.0);
-        // Letter settled smoothly into resting position (clean airy swoosh on emergence only)
         if (this.playedLetterSettleSounds && !this.playedLetterSettleSounds.has(cfg.name)) {
           this.playedLetterSettleSounds.add(cfg.name);
         }
         continue;
       }
 
-      // 1. Forward Emergence Physics (Y in model space = Z in root space)
+      // 1. Vertical Rise Physics (Y in model space = Up)
       let progressY;
       if (u < 0.68) {
-        // Explosive forward acceleration out of the portal
         const p = u / 0.68;
         progressY = p * p * (3.0 - 2.0 * p);
       } else {
-        // Physical overshoot and damped harmonic spring bounce at resting plane
         const p = (u - 0.68) / 0.32;
         const bounce = Math.sin(p * Math.PI * 2.5) * Math.exp(-p * 3.8) * 0.08;
         progressY = 1.0 + bounce * (1.0 - p);
       }
-      const y = launchY + (0.0000 - launchY) * progressY;
+      const y = launchY + (cfg.restY - launchY) * progressY;
 
-      // 2. Lateral Fanning & Portal Clearance (X in model space)
-      // Clustered near center at launch to guarantee clearance of obsidian frame [2.25, 6.01]
-      const launchX = midX + (cfg.restX - midX) * 0.22;
+      // 2. Lateral Fanning (X in model space)
+      const launchX = cfg.restX * 0.20;
       let progressX;
       if (u < 0.28) {
-        // Stay within clear portal opening
-        progressX = (u / 0.28) * 0.15;
+        progressX = (u / 0.28) * 0.20;
       } else {
-        // Smooth fanning momentum toward final horizontal resting position
         const p = (u - 0.28) / 0.72;
-        const bounceX = Math.sin(p * Math.PI * 2.0) * Math.exp(-p * 3.2) * 0.04 * Math.sign(cfg.restX - midX);
-        progressX = 0.15 + 0.85 * (1.0 - Math.pow(1.0 - p, 3)) + bounceX * (1.0 - p);
+        const bounceX = Math.sin(p * Math.PI * 2.0) * Math.exp(-p * 3.2) * 0.04 * Math.sign(cfg.restX);
+        progressX = 0.20 + 0.80 * (1.0 - Math.pow(1.0 - p, 3)) + bounceX * (1.0 - p);
       }
       const x = launchX + (cfg.restX - launchX) * progressX;
 
-      // 3. Dynamic Vertical Parabolic Loft (Z in model space)
-      const arc = Math.sin(u * Math.PI) * 0.26;
-      const bounceZ = Math.sin(u * Math.PI * 3.0) * Math.exp(-u * 4.0) * 0.04;
-      const z = restZ + arc + bounceZ;
+      // 3. Dynamic Forward Emergence Arc (Z in model space = Towards viewer)
+      const arc = Math.sin(u * Math.PI) * 0.40;
+      const progressZ = 1.0 - Math.pow(1.0 - u, 2);
+      const z = launchZ + (cfg.restZ - launchZ) * progressZ + arc;
 
-      // 4. Controlled Rotational Tumble & Tilt
+      // 4. Controlled Rotational Tumble
       const decay = Math.exp(-u * 3.6);
-      const letterFactor = (cfg.restX - midX) / 3.8;
-      // Controlled pitch backward during ejection, decaying to zero
-      const rotX = -Math.sin(u * Math.PI) * 0.32 * decay;
-      // Aerodynamic yaw reflecting flight trajectory
-      const rotY = Math.sin(u * Math.PI * 1.5) * 0.22 * letterFactor * decay;
-      // Subtle roll wobble
-      const rotZ = -Math.sin(u * Math.PI) * 0.14 * letterFactor * decay;
+      const letterFactor = cfg.restX / 10.0;
+      const rotX = -Math.sin(u * Math.PI) * 0.25 * decay;
+      const rotY = Math.sin(u * Math.PI * 1.5) * 0.18 * letterFactor * decay;
+      const rotZ = 0;
 
-      // 5. Scale Evolution (instant solid feel upon portal exit, subtle landing pop)
+      // 5. Scale Evolution
       let scale = 1.0;
       if (u < 0.20) {
-        scale = 0.45 + (u / 0.20) * 0.55;
+        scale = 0.40 + (u / 0.20) * 0.60;
       } else if (u < 0.75) {
         const p = (u - 0.20) / 0.55;
-        scale = 1.0 + Math.sin(p * Math.PI) * 0.05;
+        scale = 1.0 + Math.sin(p * Math.PI) * 0.06;
       } else {
         scale = 1.0;
       }
@@ -1943,12 +1921,11 @@ AFRAME.registerComponent('outergazers-sequence', {
 
   resetTextToRestingPose: function () {
     if (!this.textLetterNodes) return;
-    const restZ = -0.4093887;
     for (let i = 0; i < this.textLetterNodes.length; i++) {
       const item = this.textLetterNodes[i];
       if (item && item.node) {
         item.node.visible = true;
-        item.node.position.set(item.config.restX, 0.0000, restZ);
+        item.node.position.set(item.config.restX, item.config.restY, item.config.restZ);
         item.node.rotation.set(0, 0, 0);
         item.node.scale.set(1.0, 1.0, 1.0);
       }

@@ -1,4 +1,4 @@
-﻿# README — Team Outergazers WebAR Source Package
+# README — Team Outergazers WebAR Source Package
 **For teammates: how to run, edit, rebuild and deploy this project**
 
 ---
@@ -298,7 +298,7 @@ The following files **do not exist on disk** and could not be included:
 | Blender source for Obsidian_Portal_Construction.glb | Cannot re-author portal animation from scratch |
 | Blender source for Portal_Surface.glb | Cannot re-author portal surface shader |
 | Blender source for chest.glb | Cannot re-author Ender Chest model from scratch |
-| Blender source for outergazers_text_fbx_style.glb | Cannot change text geometry without re-modelling |
+| Blender source for outergazers_text_fbx_style.glb | Included in sources/3d/Text_cam_ref.blend (rebuild via build_new_text_glb.py) |
 | Poster source vector/PSD | Raster PNG is available; vector design file not found |
 
 All GLBs can be imported into Blender for limited editing.
