@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindAR Image Target Compiler - Outergazers</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a; color: #e2e8f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 32px 16px; gap: 24px;
+    }
+    h1 { font-size: 22px; font-weight: 700; color: #a78bfa; text-align: center; }
+    .subtitle { font-size: 13px; color: #94a3b8; text-align: center; max-width: 480px; }
+    .card {
+      background: rgba(30,41,59,0.9); border: 1px solid rgba(148,163,184,0.15);
+      border-radius: 16px; padding: 28px; width: 100%; max-width: 520px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+    .drop-zone {
+      border: 2px dashed rgba(167,139,250,0.4); border-radius: 12px;
+      padding: 36px 20px; text-align: center; cursor: pointer;
+      transition: all 0.2s ease; position: relative;
+    }
+    .drop-zone:hover, .drop-zone.dragover { border-color: #a78bfa; background: rgba(167,139,250,0.06); }
+    .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .drop-zone .icon { font-size: 36px; margin-bottom: 8px; }
+    .drop-zone .label { font-size: 14px; color: #94a3b8; }
+    .drop-zone .label strong { color: #c4b5fd; }
+    #preview-container { display: none; flex-direction: column; align-items: center; gap: 8px; }
+    #preview-img { max-height: 180px; max-width: 100%; border-radius: 8px; border: 1px solid rgba(148,163,184,0.2); }
+    .meta { font-size: 12px; color: #64748b; text-align: center; }
+    button.compile-btn {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      color: white; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    button.compile-btn:hover:not(:disabled) { background: linear-gradient(135deg,#6d28d9,#9333ea); transform: translateY(-1px); }
+    button.compile-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #status { display: none; flex-direction: column; gap: 10px; }
+    .status-label { font-size: 13px; color: #94a3b8; }
+    .progress-track { height: 8px; background: rgba(148,163,184,0.1); border-radius: 99px; overflow: hidden; }
+    .progress-bar { height: 100%; background: linear-gradient(90deg,#7c3aed,#a855f7); border-radius: 99px; width: 0%; transition: width 0.3s ease; }
+    .status-text { font-size: 12px; color: #64748b; font-family: monospace; }
+    .download-btn {
+      display: none; width: 100%; padding: 14px;
+      background: linear-gradient(135deg,#059669,#10b981);
+      color: white; border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      text-align: center; text-decoration: none;
+    }
+    .note { font-size: 12px; color: #475569; background: rgba(15,23,42,0.6); border-radius: 8px; padding: 10px 14px; border-left: 3px solid #7c3aed; }
+    .warning { border-left-color: #f59e0b; color: #b45309; background: rgba(245,158,11,0.08); }
+  </style>
+</head>
+<body>
+  <h1>MindAR Image Target Compiler</h1>
+  <p class="subtitle">Outergazers WebAR - Generate a new poster.mind from an image. Uses mind-ar@1.2.5 (same as production).</p>
+  <div class="card">
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" id="file-input" accept="image/*" />
+      <div class="icon">&#128444;</div>
+      <div class="label">Drop image here or <strong>click to browse</strong></div>
+    </div>
+    <div id="preview-container">
+      <img id="preview-img" src="" alt="Preview" />
+      <div class="meta" id="img-meta"></div>
+    </div>
+    <div class="note">
+      <strong>How to use:</strong> Select the new AR poster image, click Compile, wait for the .mind file to generate, then save it as <code>poster.mind</code> in the project root.
+    </div>
+    <button class="compile-btn" id="compile-btn" disabled>Compile Image Target</button>
+    <div id="status">
+      <div class="status-label">Compiling... this takes 30-90 seconds</div>
+      <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+      <div class="status-text" id="status-text">Initializing compiler...</div>
+    </div>
+    <a class="download-btn" id="download-btn" href="#" download="poster.mind">Download poster.mind</a>
+    <div class="note warning" id="warn-note" style="display:none">
+      Compilation failed. Check browser console. Make sure you run from a local server (not file://).
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
+  <script>
+    const dropZone=document.getElementById('drop-zone');
+    const fileInput=document.getElementById('file-input');
+    const compileBtn=document.getElementById('compile-btn');
+    const previewContainer=document.getElementById('preview-container');
+    const previewImg=document.getElementById('preview-img');
+    const imgMeta=document.getElementById('img-meta');
+    const statusEl=document.getElementById('status');
+    const progressBar=document.getElementById('progress-bar');
+    const statusText=document.getElementById('status-text');
+    const downloadBtn=document.getElementById('download-btn');
+    const warnNote=document.getElementById('warn-note');
+    let selectedFile=null;
+    dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('dragover');});
+    dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop',e=>{
+      e.preventDefault();dropZone.classList.remove('dragover');
+      const f=e.dataTransfer.files[0];
+      if(f&&f.type.startsWith('image/'))loadFile(f);
+    });
+    fileInput.addEventListener('change',e=>{const f=e.target.files[0];if(f)loadFile(f);});
+    function loadFile(file){
+      selectedFile=file;
+      const url=URL.createObjectURL(file);
+      previewImg.src=url;
+      previewImg.onload=()=>{imgMeta.textContent=previewImg.naturalWidth+' x '+previewImg.naturalHeight+'px | '+(file.size/1024).toFixed(1)+' KB | '+file.type;};
+      previewContainer.style.display='flex';
+      compileBtn.disabled=false;
+      downloadBtn.style.display='none';
+      warnNote.style.display='none';
+    }
+    compileBtn.addEventListener('click',async()=>{
+      if(!selectedFile)return;
+      compileBtn.disabled=true;
+      statusEl.style.display='flex';
+      downloadBtn.style.display='none';
+      warnNote.style.display='none';
+      progressBar.style.width='0%';
+      statusText.textContent='Loading image...';
+      try{
+        const imgUrl=URL.createObjectURL(selectedFile);
+        const img=new Image();
+        await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=imgUrl;});
+        statusText.textContent='Image loaded: '+img.width+'x'+img.height+'. Initializing MindAR compiler...';
+        progressBar.style.width='5%';
+        const compiler=new MINDAR.IMAGE.Compiler();
+        statusText.textContent='Compiling image target (this takes time)...';
+        progressBar.style.width='10%';
+        await compiler.compileImageTargets([img],(progress)=>{
+          const pct=Math.round(progress*100);
+          progressBar.style.width=pct+'%';
+          statusText.textContent='Compiling... '+pct+'%';
+        });
+        progressBar.style.width='95%';
+        statusText.textContent='Exporting .mind file...';
+        const exportedBuffer=await compiler.exportData();
+        const blob=new Blob([exportedBuffer]);
+        const url=URL.createObjectURL(blob);
+        downloadBtn.href=url;
+        downloadBtn.style.display='block';
+        progressBar.style.width='100%';
+        statusText.textContent='Done! File size: '+(blob.size/1024).toFixed(1)+' KB';
+        console.log('[MindAR Compiler] Success! Blob size:',blob.size,'bytes');
+      }catch(err){
+        console.error('[MindAR Compiler] Error:',err);
+        warnNote.style.display='block';
+        statusText.textContent='Error: '+err.message;
+        compileBtn.disabled=false;
+      }
+    });
+  </script>
+</body>
+</html>

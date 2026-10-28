@@ -1,17 +1,26 @@
 """
-Script to rebuild assets/outergazers_text_fbx_style.glb from D:\NEW TEXTURES\model2.gltf
+Script to rebuild assets/outergazers_text_fbx_style.glb from sources/3d/model2.gltf
 preserving the 11 animated letter nodes and the 'outergazers_text_reveal' animation clip.
+Can be executed on any machine with Blender:
+  blender --background --python build_new_text_glb.py
 """
 
+import os
 import bpy
+
+# Determine base project directory from script location
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_GLB = os.path.join(SCRIPT_DIR, 'assets', 'outergazers_text_fbx_style.glb')
+MODEL2_GLTF = os.path.join(SCRIPT_DIR, 'sources', '3d', 'model2.gltf')
+OUTPUT_GLB = os.path.join(SCRIPT_DIR, 'assets', 'outergazers_text_fbx_style.glb')
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
 
-# 1. Import bak (has animation and the 11 Letter nodes)
-bpy.ops.import_scene.gltf(filepath=r'c:\Users\akhil\OneDrive\Desktop\webar-prototype-outergazers\assets\outergazers_text_fbx_style.glb.bak')
+# 1. Import base animated GLB (contains 11 animated letter nodes and reveal animation)
+bpy.ops.import_scene.gltf(filepath=BASE_GLB)
 
-# 2. Import model2.gltf
-bpy.ops.import_scene.gltf(filepath=r'D:\NEW TEXTURES\model2.gltf')
+# 2. Import model2.gltf source
+bpy.ops.import_scene.gltf(filepath=MODEL2_GLTF)
 
 letters = [
     ('Letter_00_O', 'o', 10.0),
@@ -77,12 +86,11 @@ for obj in list(bpy.data.objects):
         bpy.data.objects.remove(obj, do_unlink=True)
 
 # Export to assets/outergazers_text_fbx_style.glb
-out_path = r'c:\Users\akhil\OneDrive\Desktop\webar-prototype-outergazers\assets\outergazers_text_fbx_style.glb'
 bpy.ops.export_scene.gltf(
-    filepath=out_path,
+    filepath=OUTPUT_GLB,
     export_format='GLB',
     export_animations=True,
     export_current_frame=False,
     export_apply=False
 )
-print('Successfully exported GLB to:', out_path)
+print('Successfully exported GLB to:', OUTPUT_GLB)
