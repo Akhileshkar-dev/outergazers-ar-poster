@@ -56,8 +56,7 @@ outergazers-ar-poster/
     │
     ├── images/
     │   ├── scroll_blank_base.png       # Opaque parchment scroll background texture
-    │   ├── A Call to Adventure_ GameJam 2026.png # Transparent event artwork overlay
-    │   └── scroll_poster.png           # Complete unrolled event poster texture
+    │   └── A Call to Adventure_ GameJam 2026.png # Transparent event artwork overlay
     │
     ├── audio/
     │   ├── Grass Sound Effect .mp3.mpeg
