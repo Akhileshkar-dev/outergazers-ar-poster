@@ -9,6 +9,18 @@ OUTPUT_GLB = os.path.join(SCRIPT_DIR, 'assets', 'outergazers_text_fbx_style.glb'
 
 bpy.ops.wm.open_mainfile(filepath=BLEND_PATH)
 
+# Apply vibrant orange texture to GAMEJAM 2026
+orange_tex_path = os.path.join(SCRIPT_DIR, 'gamejam_orange_texture.png')
+if os.path.exists(orange_tex_path):
+    new_orange_img = bpy.data.images.load(orange_tex_path)
+    for m_name in ['Material_0', 'Material_0.001']:
+        m = bpy.data.materials.get(m_name)
+        if m and m.use_nodes:
+            for n in m.node_tree.nodes:
+                if n.type == 'TEX_IMAGE':
+                    n.image = new_orange_img
+    print('Loaded and linked orange GAMEJAM texture.')
+
 cam = bpy.data.objects['Camera']
 inv_cam = cam.matrix_world.inverted()
 

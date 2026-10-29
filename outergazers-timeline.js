@@ -47,30 +47,23 @@ const CHEST_BOTTOM_ALIGN_Y = 0.0;
 // Native artwork: SCROLL FOR AR POSTER.png (1145 x 1374, Aspect Ratio: 0.8333)
 // =============================================================================
 const EVENT_PAPER_CONFIG = {
-  baseImageUrl: './assets/images/scroll_blank_base.png?v=20261026_scroll_perfect',
-  printImageUrl: './assets/images/A Call to Adventure_ GameJam 2026.png?v=20261026_scroll_perfect',
-  imageUrl: './assets/images/A Call to Adventure_ GameJam 2026.png?v=20261026_scroll_perfect',
-  fallbackImageUrl: './assets/images/A Call to Adventure_ GameJam 2026.png?v=20261026_scroll_perfect',
+  baseImageUrl: './assets/images/scroll_blank_base.png?v=20261029_flawless_opaque_scroll_v2',
+  printImageUrl: './assets/images/A Call to Adventure_ GameJam 2026.png?v=20261029_flawless_opaque_scroll_v2',
+  imageUrl: './assets/images/A Call to Adventure_ GameJam 2026.png?v=20261029_flawless_opaque_scroll_v2',
+  fallbackImageUrl: './assets/images/A Call to Adventure_ GameJam 2026.png?v=20261029_flawless_opaque_scroll_v2',
   registrationUrl: 'https://outergazer.in/events/intracollege-gamejam-2026',
-  aspectRatio: 1145 / 1374, // 0.8333333333333334
-  // Substantially enlarged foreground dimensions (1.71875x scale): dominating mobile AR view
-  // Width: 13.750 (spans X: [-6.875, +6.875], generously covers title width [-3.0, +3.0] and portal [-2.4, +2.4])
-  // Height: 16.500 (spans Y: [-4.05, +12.45], generously covers chest [0.5, 3.8] and title [5.2, 6.7] with margins on every side)
+  aspectRatio: 683 / 1024,
   paperHeight: 16.50,
-  paperWidth: 16.50 * (1145 / 1374), // 13.750 units (exact native aspect ratio, zero stretching)
-  // Emergence origin at chest opening:
-  // Starts visibly distinguishable at chest mouth (scale 0.48, z 3.50)
+  paperWidth: 16.50 * (683 / 1024),
   emergeStartPos: new THREE.Vector3(0, 3.10, 3.50),
   emergeStartScale: new THREE.Vector3(0.48, 0.48, 0.48),
-  // Resting elevation in prominent foreground (Z = 5.20, Y = 4.20), covering both Ender Chest and title completely
   restPos: new THREE.Vector3(0, 4.20, 5.20),
-  restScale: new THREE.Vector3(1.0, 1.0, 1.0),
-  // Button bounding box relative to artwork (x: [0.2358, 0.7817], y: [0.6281, 0.7100] from top)
+  restScale: new THREE.Vector3(1.5, 1.5, 1.5),
   buttonFrame: {
-    xMinRel: 0.2358,
-    xMaxRel: 0.7817,
-    yTopRel: 0.6281,
-    yBottomRel: 0.7100
+    xMinRel: 0.1500,
+    xMaxRel: 0.8500,
+    yTopRel: 0.7700,
+    yBottomRel: 0.8650
   }
 };
 
@@ -96,12 +89,13 @@ const INTERACTION_STATE = {
 };
 
 // =============================================================================
-// CUSTOM PROCEDURAL PORTAL SHADER
+// AUTHENTIC MINECRAFT NETHER PORTAL SHADER (Animated 32-frame sprite strip)
 // =============================================================================
 const PortalShaderDef = {
   uniforms: {
     uTime: { value: 0 },
-    uEmissionStrength: { value: 1.5 }
+    uEmissionStrength: { value: 1.6 },
+    uPortalTex: { value: null }
   },
   vertexShader: `
     varying vec2 vUv;
@@ -113,57 +107,28 @@ const PortalShaderDef = {
   fragmentShader: `
     uniform float uTime;
     uniform float uEmissionStrength;
+    uniform sampler2D uPortalTex;
     varying vec2 vUv;
 
-    vec2 hash22(vec2 p) {
-      p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
-      return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
-    }
-
-    float noise(vec2 p) {
-      const float K1 = 0.366025404;
-      const float K2 = 0.211324865;
-      vec2 i = floor(p + (p.x + p.y) * K1);
-      vec2 a = p - i + (i.x + i.y) * K2;
-      float m = step(a.y, a.x);
-      vec2 o = vec2(m, 1.0 - m);
-      vec2 b = a - o + K2;
-      vec2 c = a - 1.0 + 2.0 * K2;
-      vec3 h = max(0.5 - vec3(dot(a, a), dot(b, b), dot(c, c)), 0.0);
-      vec3 n = h * h * h * h * vec3(dot(a, hash22(i + 0.0)), dot(b, hash22(i + o)), dot(c, hash22(i + 1.0)));
-      return dot(n, vec3(70.0)) * 0.5 + 0.5;
-    }
-
     void main() {
-      vec2 uv = vUv;
-      vec2 grid = vec2(32.0, 48.0);
-      vec2 div_res = floor(uv * grid) / grid;
-      vec2 mult_blocks = div_res * vec2(2.0, 3.0);
-      vec2 center_uv = fract(mult_blocks) - vec2(0.5);
-      float length_node = length(center_uv);
-      float time_val = uTime * 0.5;
-      vec2 noise_uv = div_res + vec2(time_val * 0.5);
-      float n = noise(noise_uv * 5.0);
-      float dist_mult = length_node * 15.0;
-      float noise_mult = n * 8.0;
-      float sub_time = (dist_mult + noise_mult) - (time_val * 4.0);
-      float fac = (sin(sub_time) + 1.0) * 0.5;
+      // 2 blocks horizontally by 3 blocks vertically across portal aperture
+      vec2 tiled = vUv * vec2(2.0, 3.0);
+      vec2 cellUv = fract(tiled);
 
-      vec3 c0 = vec3(34.0/255.0, 3.0/255.0, 60.0/255.0);
-      vec3 c1 = vec3(53.0/255.0, 12.0/255.0, 89.0/255.0);
-      vec3 c2 = vec3(73.0/255.0, 20.0/255.0, 117.0/255.0);
-      vec3 c3 = vec3(98.0/255.0, 27.0/255.0, 155.0/255.0);
+      // Animate through 32 frames of authentic nether_portal.png
+      float numFrames = 32.0;
+      float fps = 14.0;
+      float frame = floor(mod(uTime * fps, numFrames));
+      float vSprite = (frame + cellUv.y) / numFrames;
+      vec4 texCol = texture2D(uPortalTex, vec2(cellUv.x, vSprite));
 
-      vec3 col = c0;
-      if (fac > 0.75) {
-        col = mix(c2, c3, (fac - 0.75) * 4.0);
-      } else if (fac > 0.5) {
-        col = mix(c1, c2, (fac - 0.5) * 4.0);
-      } else if (fac > 0.25) {
-        col = mix(c0, c1, (fac - 0.25) * 4.0);
+      vec3 col = texCol.rgb;
+      if (length(col) < 0.05) {
+        // Fallback procedural portal purple if texture loading
+        col = vec3(0.35, 0.05, 0.65);
       }
 
-      gl_FragColor = vec4(col * uEmissionStrength, 0.95);
+      gl_FragColor = vec4(col * uEmissionStrength, 0.94);
     }
   `
 };
@@ -820,10 +785,10 @@ AFRAME.registerComponent('outergazers-sequence', {
     self.models.textEl = textEl;
 
     if (textContainer) {
-      // Reposition text container directly in portal central area above Ender Chest
-      textContainer.setAttribute('position', '0 5.267 2.1');
+      // Reposition text container directly in portal central area above Ender Chest (+0.60 units upward to Y=5.867)
+      textContainer.setAttribute('position', '0 5.867 2.1');
       if (textContainer.object3D) {
-        textContainer.object3D.position.set(0, 5.267, 2.1);
+        textContainer.object3D.position.set(0, 5.867, 2.1);
       }
     }
 
@@ -880,8 +845,28 @@ AFRAME.registerComponent('outergazers-sequence', {
       portalEl.addEventListener('model-loaded', (e) => {
         self.models.portalSurface = e.detail.model;
 
+        const texLoader = new THREE.TextureLoader();
+        const portalTex = texLoader.load('./assets/images/nether_portal.png?v=20261028_portal_v1', (tex) => {
+          tex.magFilter = THREE.NearestFilter;
+          tex.minFilter = THREE.NearestFilter;
+          tex.generateMipmaps = false;
+          tex.flipY = false;
+          tex.needsUpdate = true;
+          if (self.portalMaterial && self.portalMaterial.uniforms && self.portalMaterial.uniforms.uPortalTex) {
+            self.portalMaterial.uniforms.uPortalTex.value = tex;
+            self.portalMaterial.needsUpdate = true;
+          }
+        });
+        portalTex.magFilter = THREE.NearestFilter;
+        portalTex.minFilter = THREE.NearestFilter;
+        portalTex.generateMipmaps = false;
+        portalTex.flipY = false;
+
+        const uniforms = THREE.UniformsUtils.clone(PortalShaderDef.uniforms);
+        uniforms.uPortalTex.value = portalTex;
+
         self.portalMaterial = new THREE.ShaderMaterial({
-          uniforms: THREE.UniformsUtils.clone(PortalShaderDef.uniforms),
+          uniforms: uniforms,
           vertexShader: PortalShaderDef.vertexShader,
           fragmentShader: PortalShaderDef.fragmentShader,
           transparent: true,
@@ -1814,9 +1799,18 @@ AFRAME.registerComponent('outergazers-sequence', {
       }
     });
 
+    // TASK: Scale OUTERGAZERS font alone to 1.8X without altering GAMEJAM
+    const OG_FONT_SCALE = 1.8;
+
     letterConfigs.forEach((cfg) => {
       const node = textModel.getObjectByName(cfg.name);
       if (node && node.isMesh && node.geometry) {
+        if (cfg.name.startsWith('Letter_')) {
+          cfg.restX = cfg.restX * OG_FONT_SCALE;
+          // Maintain baseline elevation sitting cleanly above GAMEJAM 2026
+          const halfHeight = 1.37735;
+          cfg.restY = cfg.restY + halfHeight * (OG_FONT_SCALE - 1.0);
+        }
         this.textLetterNodes.push({
           node: node,
           config: cfg
@@ -1856,10 +1850,13 @@ AFRAME.registerComponent('outergazers-sequence', {
       node.visible = true;
       const u = Math.min(tElapsed / flightDuration, 1.0);
 
+      const isOG = cfg.name.startsWith('Letter_');
+      const letterScaleMultiplier = isOG ? 1.8 : 1.0;
+
       if (u >= 1.0) {
         node.position.set(cfg.restX, cfg.restY, cfg.restZ);
         node.rotation.set(0, 0, 0);
-        node.scale.set(1.0, 1.0, 1.0);
+        node.scale.set(letterScaleMultiplier, letterScaleMultiplier, letterScaleMultiplier);
         if (this.playedLetterSettleSounds && !this.playedLetterSettleSounds.has(cfg.name)) {
           this.playedLetterSettleSounds.add(cfg.name);
         }
@@ -1915,7 +1912,7 @@ AFRAME.registerComponent('outergazers-sequence', {
 
       node.position.set(x, y, z);
       node.rotation.set(rotX, rotY, rotZ);
-      node.scale.set(scale, scale, scale);
+      node.scale.set(scale * letterScaleMultiplier, scale * letterScaleMultiplier, scale * letterScaleMultiplier);
     }
   },
 
@@ -1924,10 +1921,12 @@ AFRAME.registerComponent('outergazers-sequence', {
     for (let i = 0; i < this.textLetterNodes.length; i++) {
       const item = this.textLetterNodes[i];
       if (item && item.node) {
+        const isOG = item.config.name.startsWith('Letter_');
+        const s = isOG ? 1.8 : 1.0;
         item.node.visible = true;
         item.node.position.set(item.config.restX, item.config.restY, item.config.restZ);
         item.node.rotation.set(0, 0, 0);
-        item.node.scale.set(1.0, 1.0, 1.0);
+        item.node.scale.set(s, s, s);
       }
     }
   },

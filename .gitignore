@@ -28,3 +28,7 @@ desktop.ini
 .idea/
 
 .vercel
+
+# Python cache
+__pycache__/
+*.pyc

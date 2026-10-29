@@ -1,195 +1,152 @@
-﻿# Team Outergazers — WebAR Experience
+# Team Outergazers — WebAR Experience 🎮
 
-> **FINAL LOCKED BUILD** — Task 4 Tracking Configuration + Task 5 Optimisation 1 (26 Oct 2026)
+> **FINAL PRODUCTION RELEASE** — Outergazers GameJam 2026
 
-A Minecraft-themed, image-target WebAR experience built with **A-Frame 1.5.0** and **MindAR 1.2.5**.
-Point a phone camera at the printed GameJam 2026 poster and watch a full cinematic scene unfold in
-augmented reality — grass spawns, an obsidian portal constructs block-by-block, an Ender Chest flies
-through the portal, a creeper explosion fills the screen, and a parchment scroll unfurls revealing the
-GameJam event details with a live registration button.
+An immersive, Minecraft-themed WebAR experience built with **A-Frame 1.5.0** and **MindAR 1.2.5**.
 
----
-
-## 🌐 Production URL
-
-**Live experience (mobile-optimised, HTTPS):**
-```
-https://outergazers-webar-task3.vercel.app
-```
-
-Scan this URL with your phone camera or share it with participants.  
-HTTPS is required for WebXR camera access.
+Point your mobile phone camera at the physical or digital **GameJam 2026 Poster** (`poster.jpg`) and watch a full cinematic 3D sequence unfold in augmented reality:
+1. **Grass Base Spawns** block-by-block with authentic Minecraft placement SFX.
+2. **Obsidian Nether Portal** assembles cube-by-cube with glowing purple portal energy.
+3. **Ender Chest** glides out of the Nether portal, bounces with physics onto the grass, and awaits interaction.
+4. **Cinematic 3D Minecraft Font**: "OUTERGAZERS" (scaled 1.8X) and "GAMEJAM 2026" (in fiery orange) hover dynamically above the portal.
+5. **Interactive Chest Tap**: Tapping the chest triggers an authentic 61-frame Creeper explosion with smoke particles and audio.
+6. **1.5X Foreground Event Parchment**: The royal event scroll unfurls in the foreground displaying the jam themes, dates (**Oct 29 – Nov 29**), and an interactive **REGISTER NOW** button.
+7. **Replay Controller**: Reset and replay the experience at any time using the HUD replay button.
 
 ---
 
-## 📋 Registration URL
+## 🌐 Live Production URLs
 
-```
-https://outergazer.in/events/intracollege-gamejam-2026
-```
+* **Primary WebAR**: [https://ar-task3.vercel.app](https://ar-task3.vercel.app)
+* **Direct Production URL**: [https://outergazers-ar-poster.vercel.app](https://outergazers-ar-poster.vercel.app)
+* **Prototype Mirror**: [https://outergazers-webar-task3.vercel.app](https://outergazers-webar-task3.vercel.app)
 
-This link is also embedded in the interactive registration button that appears on the AR scroll
-after the full experience plays.
+> *HTTPS is mandatory for mobile browser camera permissions (WebRTC / WebXR).*
+
+---
+
+## 🎯 Image Target (Scanner Marker)
+
+To view the AR experience:
+1. Open the [Live WebAR URL](https://ar-task3.vercel.app) on your mobile phone (Chrome on Android or Safari on iOS).
+2. Point your camera at [`poster.jpg`](./poster.jpg) (either printed on paper or displayed on your laptop/desktop screen).
 
 ---
 
 ## 🗂 Project Structure
 
 ```
-webar-prototype-outergazers/
-├── index.html                          # Main AR experience entry point
-├── outergazers-timeline.js             # Master timeline & sequence controller
-├── poster.mind                         # Compiled MindAR image target (Task 4 final)
-├── vercel.json                         # Vercel deployment config (CORS, MIME types)
-├── serve.js                            # Local dev server (Node.js, no dependencies)
-├── README.md                           # This file
-├── .vercelignore                       # Vercel deployment exclusions
-├── .gitignore                          # Git exclusions
+outergazers-ar-poster/
+├── index.html                          # Main WebAR entry point (A-Frame scene + Camera Optimizer)
+├── outergazers-timeline.js             # Master cinematic timeline & interaction controller
+├── poster.mind                         # Compiled MindAR image tracking target
+├── poster.jpg                          # Original image target poster (printable/scannable)
+├── build_perfect_text_glb.py           # Generator tool for 3D Minecraft text font GLB
+├── vercel.json                         # Vercel deployment configuration (CORS, cache headers)
+├── serve.js                            # Local zero-dependency dev server
+├── README.md                           # Documentation and reuse guide
+├── .gitignore                          # Clean repository ignore configuration
 │
-├── assets/
-│   ├── Grass_Spawn.glb                 # Grass platform 3D model + animations
-│   ├── Obsidian_Portal_Construction.glb # Obsidian portal 3D model + animations
-│   ├── Portal_Surface.glb              # Portal energy surface 3D model
-│   ├── chest.glb                       # Ender Chest 3D model (lid animation)
-│   ├── outergazers_text_fbx_style.glb  # OUTERGAZERS 3D silver text model
-│   │
-│   ├── images/
-│   │   ├── scroll_blank_base.png       # Scroll parchment base texture
-│   │   ├── A Call to Adventure_ GameJam 2026.png  # Event scroll artwork
-│   │   ├── SCROLL FOR AR POSTER.png    # Scroll poster variant
-│   │   └── scroll_poster.png           # Final poster image
-│   │
-│   ├── audio/
-│   │   ├── Grass Sound Effect .mp3.mpeg
-│   │   ├── Portal Sound Effect .mp3.mpeg
-│   │   ├── Ender Chest Sound Effect .mp3.mpeg
-│   │   ├── Explosion .mp3.mpeg
-│   │   ├── obsidian block.mp3.mpeg     # Fallback obsidian sound
-│   │   └── extra/                      # Cinematic sound design upgrade
-│   │       ├── obsidian_place.wav
-│   │       ├── letter_swoosh.wav
-│   │       ├── letter_whoosh.wav
-│   │       ├── letter_settle.wav
-│   │       ├── title_shimmer.wav
-│   │       ├── chest_land_thud.wav
-│   │       ├── parchment_unfurl.wav
-│   │       └── parchment_settle.wav
-│   │
-│   └── explosion/
-│       ├── explosion_spritesheet.png   # 61-frame Minecraft creeper explosion
-│       └── explosion_metadata.json     # Spritesheet layout config
-│
-└── Sounds/                             # Fallback audio directory (legacy path)
-    ├── Grass Sound Effect .mp3.mpeg
-    ├── Portal Sound Effect .mp3.mpeg
-    ├── Ender Chest Sound Effect .mp3.mpeg
-    ├── Explosion .mp3.mpeg
-    └── obsidian block.mp3.mpeg
+└── assets/
+    ├── Grass_Spawn.glb                 # 10x10 grass island 3D model with cube textures
+    ├── Obsidian_Portal_Construction.glb # Obsidian Nether Portal 3D model with stone textures
+    ├── Portal_Surface.glb              # Animated purple Nether portal energy surface
+    ├── chest.glb                       # Ender Chest 3D model (with animated lid)
+    ├── outergazers_text_fbx_style.glb  # 3D Minecraft text ("OUTERGAZERS" 1.8X + orange "GAMEJAM")
+    │
+    ├── images/
+    │   ├── scroll_blank_base.png       # Opaque parchment scroll background texture
+    │   ├── A Call to Adventure_ GameJam 2026.png # Transparent event artwork overlay
+    │   └── scroll_poster.png           # Complete unrolled event poster texture
+    │
+    ├── audio/
+    │   ├── Grass Sound Effect .mp3.mpeg
+    │   ├── Portal Sound Effect .mp3.mpeg
+    │   ├── Ender Chest Sound Effect .mp3.mpeg
+    │   ├── Explosion .mp3.mpeg
+    │   ├── obsidian block.mp3.mpeg
+    │   └── extra/                      # Cinematic SFX suite
+    │       ├── obsidian_place.wav
+    │       ├── letter_swoosh.wav
+    │       ├── letter_whoosh.wav
+    │       ├── letter_settle.wav
+    │       ├── title_shimmer.wav
+    │       ├── chest_land_thud.wav
+    │       ├── parchment_unfurl.wav
+    │       └── parchment_settle.wav
+    │
+    └── explosion/
+        ├── explosion_spritesheet.png   # 61-frame high-resolution Creeper explosion
+        └── explosion_metadata.json     # Spritesheet coordinates and frame timings
 ```
 
 ---
 
-## 🚀 Running Locally
+## 🚀 Quick Start / Local Development
 
-### Prerequisites
+### 1. Clone the repository
+```bash
+git clone https://github.com/Akhileshkar-dev/outergazers-ar-poster.git
+cd outergazers-ar-poster
+```
 
-- **Node.js** (v16 or newer)
-- A modern browser (Chrome or Safari recommended)
-- HTTPS is required for camera access. The local server binds to `127.0.0.1` which works for
-  desktop testing. For **mobile testing over a LAN**, use a tunnel tool such as `ngrok`.
-
-### Quick Start
-
-1. Open a terminal in the project root.
-2. Start the local dev server:
-
+### 2. Start a local HTTP server
+Using Node.js:
 ```bash
 node serve.js
 ```
-
-3. Navigate to:
-
-```
-http://127.0.0.1:8089
+*Or using Python 3:*
+```bash
+python -m http.server 8089
 ```
 
-4. Allow camera access when prompted.
-5. Point the camera at the printed **GameJam 2026** poster (or display it on a second screen).
-
-> **Mobile tip:** Run `ngrok http 8089` to get a public HTTPS tunnel URL for on-device testing.
+### 3. Open in Browser
+Open `http://127.0.0.1:8089` on desktop or test over LAN with an HTTPS tunnel (e.g. `ngrok http 8089` or `cloudflared`).
 
 ---
 
-## 📱 How to Use the AR Experience
+## ⚡ Key Technical Innovations & Optimizations
 
-1. **Open the URL** on a mobile device (Android Chrome or iOS Safari).
-2. **Allow camera access** when prompted.
-3. **Point the camera at the poster** — keep it centered in the scanning frame.
-4. **Watch the cinematic sequence:**
-   - Grass platform spawns block-by-block (~3.7s)
-   - Obsidian blocks construct the Nether Portal (~8.0s)
-   - Portal energy surface activates (~9.0s)
-   - Ender Chest emerges, flies through the portal, and lands (~12.0s)
-5. **Tap the Ender Chest** to trigger the interaction.
-6. A **creeper explosion** fills the screen.
-7. The **event scroll** unfurls — read the GameJam details.
-8. Tap **Register Now** to open the registration page.
-9. Use the **↺ Replay** button (top-right) to restart at any time.
+### 1. Butter-Smooth Tracking (OneEuroFilter)
+MindAR's raw default parameters can cause high-frequency camera shake on mobile sensors. We tuned the tracking filter in `index.html`:
+```html
+mindar-image="imageTargetSrc: ./poster.mind; filterMinCF: 0.0001; filterBeta: 0.01; missTolerance: 25; warmupTolerance: 5;"
+```
+* **`filterMinCF: 0.0001`**: 10x stronger low-pass smoothing when stationary. Completely locks models in place.
+* **`filterBeta: 0.01`**: 100,000x lower noise multiplication. Prevents microscopic hand tremors from shaking the 3D scene.
+* **`missTolerance: 25`**: Holds tracking across brief camera blurs (~0.8s) without snapping or jittering.
 
----
+### 2. Universal Camera FOV & Zoom Optimizer
+Solves the issue where some multi-camera Android devices (e.g., Samsung, OnePlus, Xiaomi) open the web camera in a cropped 2X zoom mode:
+* Injects a lightweight `navigator.mediaDevices.getUserMedia` interceptor.
+* Requests `{ width: { ideal: 1920 }, height: { ideal: 1080 } }` to force **full-sensor binning** instead of a 2X center cutout.
+* Queries `track.getCapabilities().zoom` and resets the optical lens back to **`1.0X` wide angle**.
 
-## 🔒 Task Status
-
-| Task | Description | Status |
-|------|-------------|--------|
-| Task 1 | Basic AR anchor + A-Frame scene setup | ✅ Complete |
-| Task 2 | 3D models + animation timeline | ✅ Complete |
-| Task 3 | Initial MindAR poster target compilation | ✅ Complete |
-| **Task 4** | **Final tracking config (filterMinCF: 0.001, filterBeta: 1000, missTolerance: 15, warmupTolerance: 5)** | ✅ **LOCKED** |
-| **Task 5 Opt 1** | **Performance optimisation — 36.4ms peak spike reduction, Chest Phase +6.2 FPS, Scroll Phase +5.9 FPS** | ✅ **LOCKED** |
-| Task 6 | Chest scale + 100ms reveal fix | ✅ Complete |
-| Task 13 | Chest 1.9× scale, creeper explosion billboard, scroll reveal | ✅ Complete |
+### 3. Progressive Scroll Unfurling Shader
+The event scroll utilizes a custom two-pass GLSL discard shader:
+* **Base Parchment Layer**: Unrolls smoothly from a rolled scroll at the chest mouth to a 1.5X reading scale in the foreground.
+* **Artwork Print Layer**: Progressively prints the event details as the paper unfurls.
+* **Interactive HTML/CSS Overlay**: Automatically projects 3D matrix bounds to screen space so users can tap "REGISTER NOW" directly on any screen size.
 
 ---
 
-## 🛠 Deployment (Vercel)
+## 🛠 Reusing & Customizing This Project
 
-The project is already live. To redeploy from this archive:
+1. **Changing the Target Image**:
+   * Replace `poster.jpg` with your own poster.
+   * Compile a new `.mind` file using the [MindAR Web Compiler](https://hiukim.github.io/mind-ar-js-doc/tools/compile) or the offline compiler tool.
+   * Save as `poster.mind`.
 
-1. Install Vercel CLI: `npm i -g vercel`
-2. From the project root: `vercel --prod`
+2. **Customizing 3D Text**:
+   * Modify or re-run `python build_perfect_text_glb.py` to regenerate `assets/outergazers_text_fbx_style.glb` with custom text, scale, or colors.
 
-The `.vercel/project.json` file links this directory to the existing Vercel project
-(`outergazers-webar-task3`). Your Vercel account credentials are required.
-
-> **Do not modify** `poster.mind`, `index.html`, or `outergazers-timeline.js` without first
-> creating a backup. The Task 4 tracking configuration and Task 5 Optimisation 1 are locked
-> and approved.
-
----
-
-## 📐 Technical Details
-
-| Setting | Value |
-|---------|-------|
-| AR Framework | MindAR 1.2.5 + A-Frame 1.5.0 |
-| Image Target | `poster.mind` (single target, index 0) |
-| Tracking Filter | `filterMinCF: 0.001`, `filterBeta: 1000` |
-| Miss Tolerance | 15 frames |
-| Warmup Tolerance | 5 frames |
-| Root Scale | `0.183 0.183 0.183` |
-| Root Position | `0 -0.488 0` |
-| Chest Visual Scale | `1.0` |
-| Scroll Artwork | `1145 × 1374 px` (aspect ratio 0.8333) |
-| Explosion Frames | 61 frames via spritesheet |
+3. **Adjusting Scroll Scale & Content**:
+   * In `outergazers-timeline.js`, adjust `EVENT_PAPER_CONFIG.restScale` (default: `Vector3(1.5, 1.5, 1.5)`).
+   * Update `EVENT_PAPER_CONFIG.registrationUrl` to point to your event registration link.
 
 ---
 
-## 👥 Team
-
-**Team Outergazers**  
-Developed for the Outergazer.in Intra-College GameJam 2026
-
----
-
-*Packaged: 27 October 2026*
+## 👥 Credits & Registration
+* **Event**: Intra-College GameJam 2026
+* **Website**: [outergazer.in](https://outergazer.in)
+* **Registration**: [https://outergazer.in/events/intracollege-gamejam-2026](https://outergazer.in/events/intracollege-gamejam-2026)

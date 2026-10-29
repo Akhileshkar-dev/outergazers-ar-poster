@@ -5,6 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Team Outergazers - WebAR Experience</title>
     
+    <!-- Camera FOV & Zoom Optimizer: Enforce 1.0X Wide View and Full Sensor Binning (Prevents 2X Zoom Bug) -->
+    <script>
+      (function() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+        var origGUM = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+        navigator.mediaDevices.getUserMedia = async function(constraints) {
+          try {
+            if (constraints && constraints.video && typeof constraints.video === 'object') {
+              if (!constraints.video.width) constraints.video.width = { ideal: 1920 };
+              if (!constraints.video.height) constraints.video.height = { ideal: 1080 };
+            }
+          } catch (e) {}
+
+          var stream = await origGUM(constraints);
+
+          try {
+            var track = stream.getVideoTracks()[0];
+            if (track && track.getCapabilities) {
+              var caps = track.getCapabilities();
+              if (caps && caps.zoom) {
+                var targetZoom = typeof caps.zoom.min === 'number' ? Math.max(caps.zoom.min, 1.0) : 1.0;
+                track.applyConstraints({ advanced: [{ zoom: targetZoom }] }).catch(function() {});
+              }
+            }
+          } catch (e) {}
+
+          return stream;
+        };
+      })();
+    </script>
+
     <!-- 1. Include A-Frame -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     
@@ -18,7 +49,7 @@
     <meta http-equiv="Expires" content="0" />
     
     <!-- 3. Include Outergazers Master Timeline & Sequence Controller (Task 6 Cache-Busted) -->
-    <script src="./outergazers-timeline.js?v=20261026_scroll_perfect"></script>
+    <script src="./outergazers-timeline.js?v=20261029_camera_opt_v1"></script>
     
     <style>
       body {
@@ -225,18 +256,18 @@
       - colorSpace sRGB preserves vibrant Minecraft textures
     -->
     <a-scene 
-      mindar-image="imageTargetSrc: ./poster.mind; autoStart: true; uiLoading: no; uiScanning: no; filterMinCF: 0.001; filterBeta: 1000; missTolerance: 15; warmupTolerance: 5;" 
+      mindar-image="imageTargetSrc: ./poster.mind?v=20261029_smooth_butter_v1; autoStart: true; uiLoading: no; uiScanning: no; filterMinCF: 0.0001; filterBeta: 0.01; missTolerance: 25; warmupTolerance: 5;" 
       color-space="sRGB" 
-      renderer="colorManagement: true; physicallyCorrectLights: true;" 
+      renderer="colorManagement: true; physicallyCorrectLights: true; powerPreference: high-performance;" 
       vr-mode-ui="enabled: false" 
       device-orientation-permission-ui="enabled: false">
       
       <a-assets timeout="45000">
-        <a-asset-item id="grass-glb" src="./assets/Grass_Spawn.glb"></a-asset-item>
-        <a-asset-item id="obsidian-glb" src="./assets/Obsidian_Portal_Construction.glb"></a-asset-item>
-        <a-asset-item id="portal-glb" src="./assets/Portal_Surface.glb"></a-asset-item>
-        <a-asset-item id="chest-glb" src="./assets/chest.glb"></a-asset-item>
-        <a-asset-item id="text-glb" src="./assets/outergazers_text_fbx_style.glb?v=20261028_gj_front_facing_v5"></a-asset-item>
+        <a-asset-item id="grass-glb" src="./assets/Grass_Spawn.glb?v=20261028_cube_textures_v1"></a-asset-item>
+        <a-asset-item id="obsidian-glb" src="./assets/Obsidian_Portal_Construction.glb?v=20261028_cube_textures_v1"></a-asset-item>
+        <a-asset-item id="portal-glb" src="./assets/Portal_Surface.glb?v=20261028_cube_textures_v1"></a-asset-item>
+        <a-asset-item id="chest-glb" src="./assets/chest.glb?v=20261029_restored_clean_v1"></a-asset-item>
+        <a-asset-item id="text-glb" src="./assets/outergazers_text_fbx_style.glb?v=20261029_gj_orange_upward_v1"></a-asset-item>
       </a-assets>
 
       <!-- Camera -->
@@ -276,7 +307,7 @@
           <a-entity id="model-chest" gltf-model="#chest-glb" class="clickable"></a-entity>
 
           <!-- 5. OUTERGAZERS Cinematic 3D Text Reveal -->
-          <a-entity id="outergazers-text-container" position="0 5.267 2.1" visible="false">
+          <a-entity id="outergazers-text-container" position="0 5.867 2.1" visible="false">
             <a-entity id="model-text"
                       gltf-model="#text-glb"
                       position="0 0 0"
